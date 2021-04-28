@@ -3,7 +3,7 @@ import { createRouter , createWebHashHistory , RouteRecordRaw } from 'vue-router
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: './todo',
+        path: '/todo',
         name: 'todo',
         component: () => import('@/views/todo.vue') 
     }

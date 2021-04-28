@@ -1,5 +1,5 @@
 <template>
-  <todo></todo>
+  <router-view></router-view>
 </template>
 
 <script lang="ts">
