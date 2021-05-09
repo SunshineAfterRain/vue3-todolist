@@ -44,4 +44,4 @@ service.interceptors.response.use(
   }
 )
 
-export {service , axios} 
+export { service, axios }
