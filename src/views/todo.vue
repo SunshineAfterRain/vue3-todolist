@@ -40,7 +40,19 @@
                 </span>
               </div>
 
-              <div class="date">{{ item.createTime }}</div>
+              <div class="date">
+                <span v-if="!item.finshTime"
+                  >开始：{{ dayjs(item.createTime).format('M月DD日 HH时mm分') }}</span
+                >
+                <a-divider type="vertical" />
+                <span v-if="item.finshTime"
+                  >完成：{{ dayjs(item.finshTime).format('M月DD日 HH时mm分') }}</span
+                >
+                <a-divider type="vertical" />
+                <span v-if="item.finshTime">
+                  用时：{{ diffTime(item.createTime, item.finshTime) }}
+                </span>
+              </div>
             </label>
             <div class="action">
               <CheckCircleTwoTone
@@ -68,6 +80,7 @@
 <script lang="ts">
 import { RestTwoTone, CheckCircleTwoTone, ThunderboltTwoTone } from '@ant-design/icons-vue'
 import { defineComponent, reactive, ref, computed } from 'vue'
+import { diffTime } from '../utils/utils'
 import dayjs from 'dayjs'
 export default defineComponent({
   components: {
@@ -117,7 +130,7 @@ export default defineComponent({
         title: searchValue,
         id: todolist.length + 1,
         status: 'undo',
-        createTime: dayjs().format('MM-DD HH:mm:ss')
+        createTime: dayjs()
       })
       value.value = ''
       savedata()
@@ -138,6 +151,7 @@ export default defineComponent({
         return item.id == id
       })
       todolist[index].status = 'done'
+      todolist[index].finshTime = dayjs()
       savedata()
     }
 
@@ -156,7 +170,9 @@ export default defineComponent({
       remove,
       finsh,
       start,
-      filteredTodos
+      filteredTodos,
+      dayjs,
+      diffTime
     }
   }
 })
