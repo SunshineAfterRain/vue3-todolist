@@ -15,7 +15,6 @@ module.exports = {
   },
   plugins: ['vue', '@typescript-eslint'],
   rules: {
-    'linebreak-style': [2, 'unix'],
     'import/extensions': 'off'
   }
 }
