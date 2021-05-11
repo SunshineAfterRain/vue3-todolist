@@ -4,9 +4,9 @@
       <h2>todolist</h2>
       <div class="todo-form">
         <a-input-search
-          size="large"
           v-model:value="value"
-          placeholder="input search text"
+          size="large"
+          placeholder="请输入代办事项"
           @search="onSearch"
         >
           <template #enterButton>
@@ -14,18 +14,45 @@
           </template>
         </a-input-search>
       </div>
+      <div class="filter">
+        <a-radio-group v-model:value="status">
+          <a-radio-button value="all">全部</a-radio-button>
+          <a-radio-button value="done">已完成</a-radio-button>
+          <a-radio-button value="undo">未完成</a-radio-button>
+        </a-radio-group>
+      </div>
       <div class="todo-list">
-        <div class="todo-item" v-for="(item, index) in todolist" :key="item">
-          <label for="">
-            <a-checkbox>
-              {{ item }}
-            </a-checkbox>
-          </label>
+        <div v-for="item in todolist" :key="item.id" class="todo-item">
+          <label for="" @click="finsh(item.id)">
+            <div class="title" :class="[`${item.status}`]">
+              <span class="text">
+                {{ item.title }}
+              </span>
+              <span class="status">
+                <a-tag :color="statusMap[item.status].status">
+                  <template v-if="item.status == 'processing'" #icon>
+                    <sync-outlined :spin="true" />
+                  </template>
+                  {{ statusMap[item.status].text }}
+                </a-tag>
+              </span>
+            </div>
 
-          <a-button @click="remove(index)">
-            删除
-            <CloseOutlined />
-          </a-button>
+            <div class="date">{{ item.createTime }}</div>
+          </label>
+          <div class="action">
+            <CheckCircleTwoTone
+              v-if="item.status === 'processing'"
+              two-tone-color="#52c41a"
+              @click="finsh(item.id)"
+            />
+            <ThunderboltTwoTone
+              v-if="item.status === 'undo'"
+              two-tone-color="#108ee9"
+              @click="start(item.id)"
+            />
+            <RestTwoTone @click="remove(item.id)" />
+          </div>
         </div>
       </div>
     </div>
@@ -33,43 +60,90 @@
 </template>
 
 <script lang="ts">
-import { CloseOutlined } from '@ant-design/icons-vue'
+import { RestTwoTone, CheckCircleTwoTone, ThunderboltTwoTone } from '@ant-design/icons-vue'
 import { defineComponent, reactive, ref } from 'vue'
-
+import dayjs from 'dayjs'
 export default defineComponent({
   components: {
-    CloseOutlined
+    RestTwoTone,
+    CheckCircleTwoTone,
+    ThunderboltTwoTone
   },
   setup() {
     const value = ref('')
+    const status = ref<string>('all')
     const list = window.localStorage.getItem('todolist')
+    const statusMap = {
+      done: {
+        status: 'success',
+        text: '已完成'
+      },
+      processing: {
+        status: 'processing',
+        text: '进行中'
+      },
+      undo: {
+        status: 'error',
+        text: '未开始'
+      }
+    }
 
     const todolist = reactive<any>((list && JSON.parse(list)) || [])
     const onSearch = (searchValue: string) => {
-      console.log(value.value)
-      todolist.push(searchValue)
+      if (!searchValue) {
+        return
+      }
+      todolist.unshift({
+        title: searchValue,
+        id: todolist.length + 1,
+        status: 'undo',
+        createTime: dayjs().format('MM-DD HH:mm:ss')
+      })
       value.value = ''
       savedata()
     }
-    const remove = (index: number) => {
+    const remove = (id: number) => {
+      let index = todolist.findIndex((item) => {
+        return item.id == id
+      })
+
       todolist.splice(index, 1)
       savedata()
     }
     const savedata = () => {
       window.localStorage.setItem('todolist', JSON.stringify(todolist))
     }
+    const finsh = (id: number) => {
+      let index = todolist.findIndex((item) => {
+        return item.id == id
+      })
+      todolist[index].status = 'done'
+      savedata()
+    }
+
+    const start = (id: number) => {
+      let index = todolist.findIndex((item) => {
+        return item.id == id
+      })
+      todolist[index].status = 'processing'
+      savedata()
+    }
     return {
+      status,
+      statusMap,
       todolist,
       value,
       onSearch,
-      remove
+      remove,
+      finsh,
+      start
     }
   }
 })
 </script>
 <style lang="less" scoped>
 .contain {
-  background-color: #adbaeb;
+  background-color: #f4f6fd;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -79,17 +153,55 @@ export default defineComponent({
   margin: 100px auto 0;
   .todo-form {
     display: flex;
+    box-shadow: 0 5.3px 10px rgba(0, 0, 0, 0.035), 0 42px 80px rgba(0, 0, 0, 0.07);
+  }
+  .filter {
+    margin: 20px 8px 0 20px;
   }
   .todo-list {
     .todo-item {
       margin: 20px;
-      padding: 15px 30px;
-      border-radius: 18px;
+      padding: 8px 15px;
+      border-radius: 16px;
       border: 1px solid #f4f6fd;
       background-color: #ffffff;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 2.4px 3.9px rgba(0, 0, 0, 0.021), 0 6.5px 10.9px rgba(0, 0, 0, 0.03),
+        0 15.7px 26.2px rgba(0, 0, 0, 0.039), 0 52px 87px rgba(0, 0, 0, 0.06);
+
+      .title {
+        margin-bottom: 8px;
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+
+        &.done {
+          .text {
+            text-decoration: line-through;
+            color: #999999;
+          }
+        }
+      }
+      .status {
+        margin-left: 8px;
+        display: flex;
+        align-items: center;
+        /deep/ .ant-tag {
+          border-radius: 4px;
+        }
+      }
+      .date {
+        color: #999999;
+      }
+      .action {
+        font-size: 30px;
+        span {
+          margin-left: 10px;
+        }
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import { service,axios } from '@/utils/axios'
+import { service, axios } from '@/utils/axios'
 import user from './v1/user'
 
 const api = {

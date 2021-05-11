@@ -5,7 +5,7 @@ module.exports = {
     node: true
   },
   extends: [
-    'plugin:vue/essential',
+    'plugin:vue/vue3-recommended',
     'plugin:prettier/recommended' // 添加 prettier 插件
   ],
   parserOptions: {
