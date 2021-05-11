@@ -79,7 +79,7 @@ export default defineComponent({
     const value = ref('')
     const status = ref<string>('all')
     const list = window.localStorage.getItem('todolist')
-    const statusMap = {
+    const statusMap: any = {
       done: {
         status: 'success',
         text: '已完成'
@@ -99,11 +99,11 @@ export default defineComponent({
     const filteredTodos = computed(() => {
       switch (status.value) {
         case 'processing':
-          return todolist.filter((item) => item.status === 'processing')
+          return todolist.filter((item: any) => item.status === 'processing')
         case 'done':
-          return todolist.filter((item) => item.status === 'done')
+          return todolist.filter((item: any) => item.status === 'done')
         case 'undo':
-          return todolist.filter((item) => item.status === 'undo')
+          return todolist.filter((item: any) => item.status === 'undo')
         default:
           return todolist
       }
@@ -123,7 +123,7 @@ export default defineComponent({
       savedata()
     }
     const remove = (id: number) => {
-      let index = todolist.findIndex((item) => {
+      let index = todolist.findIndex((item: any) => {
         return item.id == id
       })
 
@@ -134,7 +134,7 @@ export default defineComponent({
       window.localStorage.setItem('todolist', JSON.stringify(todolist))
     }
     const finsh = (id: number) => {
-      let index = todolist.findIndex((item) => {
+      let index = todolist.findIndex((item: any) => {
         return item.id == id
       })
       todolist[index].status = 'done'
@@ -142,7 +142,7 @@ export default defineComponent({
     }
 
     const start = (id: number) => {
-      let index = todolist.findIndex((item) => {
+      let index = todolist.findIndex((item: any) => {
         return item.id == id
       })
       todolist[index].status = 'processing'

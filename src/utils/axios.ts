@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { message } from 'ant-design-vue'
 
 const baseURL = 'https://api.github.com'
 
@@ -35,10 +35,10 @@ service.interceptors.response.use(
     if (error.response && error.response.data) {
       const code = error.response.status
       const msg = error.response.data.message
-      ElMessage.error(`Code: ${code}, Message: ${msg}`)
+      message.error(`Code: ${code}, Message: ${msg}`)
       console.error(`[Axios Error]`, error.response)
     } else {
-      ElMessage.error(`${error}`)
+      message.error(`${error}`)
     }
     return Promise.reject(error)
   }
