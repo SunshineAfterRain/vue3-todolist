@@ -44,7 +44,7 @@
                 <span v-if="!item.finshTime"
                   >开始：{{ dayjs(item.createTime).format('M月DD日 HH时mm分') }}</span
                 >
-                <a-divider type="vertical" />
+                <a-divider v-if="!item.finshTime" type="vertical" />
                 <span v-if="item.finshTime"
                   >完成：{{ dayjs(item.finshTime).format('M月DD日 HH时mm分') }}</span
                 >
