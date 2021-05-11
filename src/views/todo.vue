@@ -17,43 +17,49 @@
       <div class="filter">
         <a-radio-group v-model:value="status">
           <a-radio-button value="all">全部</a-radio-button>
+          <a-radio-button value="processing">进行中</a-radio-button>
           <a-radio-button value="done">已完成</a-radio-button>
           <a-radio-button value="undo">未完成</a-radio-button>
         </a-radio-group>
       </div>
-      <div class="todo-list">
-        <div v-for="item in todolist" :key="item.id" class="todo-item">
-          <label for="" @click="finsh(item.id)">
-            <div class="title" :class="[`${item.status}`]">
-              <span class="text">
-                {{ item.title }}
-              </span>
-              <span class="status">
-                <a-tag :color="statusMap[item.status].status">
-                  <template v-if="item.status == 'processing'" #icon>
-                    <sync-outlined :spin="true" />
-                  </template>
-                  {{ statusMap[item.status].text }}
-                </a-tag>
-              </span>
-            </div>
+      <div v-if="filteredTodos.length > 0" class="todo-list">
+        <transition-group name="list-complete">
+          <div v-for="item in filteredTodos" :key="item.id" class="todo-item">
+            <label for="" @click="finsh(item.id)">
+              <div class="title" :class="[`${item.status}`]">
+                <span class="text">
+                  {{ item.title }}
+                </span>
+                <span class="status">
+                  <a-tag :color="statusMap[item.status].status">
+                    <template v-if="item.status == 'processing'" #icon>
+                      <sync-outlined :spin="true" />
+                    </template>
+                    {{ statusMap[item.status].text }}
+                  </a-tag>
+                </span>
+              </div>
 
-            <div class="date">{{ item.createTime }}</div>
-          </label>
-          <div class="action">
-            <CheckCircleTwoTone
-              v-if="item.status === 'processing'"
-              two-tone-color="#52c41a"
-              @click="finsh(item.id)"
-            />
-            <ThunderboltTwoTone
-              v-if="item.status === 'undo'"
-              two-tone-color="#108ee9"
-              @click="start(item.id)"
-            />
-            <RestTwoTone @click="remove(item.id)" />
+              <div class="date">{{ item.createTime }}</div>
+            </label>
+            <div class="action">
+              <CheckCircleTwoTone
+                v-if="item.status === 'processing'"
+                two-tone-color="#52c41a"
+                @click="finsh(item.id)"
+              />
+              <ThunderboltTwoTone
+                v-if="item.status === 'undo'"
+                two-tone-color="#108ee9"
+                @click="start(item.id)"
+              />
+              <RestTwoTone @click="remove(item.id)" />
+            </div>
           </div>
-        </div>
+        </transition-group>
+      </div>
+      <div v-else style="margin-top: 30px">
+        <a-empty></a-empty>
       </div>
     </div>
   </div>
@@ -61,7 +67,7 @@
 
 <script lang="ts">
 import { RestTwoTone, CheckCircleTwoTone, ThunderboltTwoTone } from '@ant-design/icons-vue'
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, reactive, ref, computed } from 'vue'
 import dayjs from 'dayjs'
 export default defineComponent({
   components: {
@@ -89,6 +95,20 @@ export default defineComponent({
     }
 
     const todolist = reactive<any>((list && JSON.parse(list)) || [])
+
+    const filteredTodos = computed(() => {
+      switch (status.value) {
+        case 'processing':
+          return todolist.filter((item) => item.status === 'processing')
+        case 'done':
+          return todolist.filter((item) => item.status === 'done')
+        case 'undo':
+          return todolist.filter((item) => item.status === 'undo')
+        default:
+          return todolist
+      }
+    })
+
     const onSearch = (searchValue: string) => {
       if (!searchValue) {
         return
@@ -131,17 +151,25 @@ export default defineComponent({
     return {
       status,
       statusMap,
-      todolist,
       value,
       onSearch,
       remove,
       finsh,
-      start
+      start,
+      filteredTodos
     }
   }
 })
 </script>
 <style lang="less" scoped>
+.list-complete-move {
+  transition: transform 0.3s ease;
+}
+.list-complete-enter-from,
+.list-complete-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
 .contain {
   background-color: #f4f6fd;
   width: 100vw;
@@ -151,6 +179,7 @@ export default defineComponent({
 .todolist {
   width: 750px;
   margin: 100px auto 0;
+  overflow: auto;
   .todo-form {
     display: flex;
     box-shadow: 0 5.3px 10px rgba(0, 0, 0, 0.035), 0 42px 80px rgba(0, 0, 0, 0.07);
@@ -158,7 +187,22 @@ export default defineComponent({
   .filter {
     margin: 20px 8px 0 20px;
   }
+
   .todo-list {
+    height: 600px;
+    overflow: auto;
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.1);
+      -webkit-box-shadow: inset006pxrgba(0, 0, 0, 0.5);
+    }
+    &::-webkit-scrollbar-track {
+      -webkit-box-shadow: inset006pxrgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+    }
     .todo-item {
       margin: 20px;
       padding: 8px 15px;
@@ -170,7 +214,7 @@ export default defineComponent({
       align-items: center;
       box-shadow: 0 2.4px 3.9px rgba(0, 0, 0, 0.021), 0 6.5px 10.9px rgba(0, 0, 0, 0.03),
         0 15.7px 26.2px rgba(0, 0, 0, 0.039), 0 52px 87px rgba(0, 0, 0, 0.06);
-
+      transition: all 0.8s ease;
       .title {
         margin-bottom: 8px;
         font-size: 18px;
@@ -189,7 +233,7 @@ export default defineComponent({
         margin-left: 8px;
         display: flex;
         align-items: center;
-        /deep/ .ant-tag {
+        :deep(.ant-tag) {
           border-radius: 4px;
         }
       }
