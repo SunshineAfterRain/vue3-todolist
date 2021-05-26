@@ -14,14 +14,7 @@
           </template>
         </a-input-search>
       </div>
-      <div class="filter">
-        <a-radio-group v-model:value="status">
-          <a-radio-button value="all">全部</a-radio-button>
-          <a-radio-button value="processing">进行中</a-radio-button>
-          <a-radio-button value="done">已完成</a-radio-button>
-          <a-radio-button value="undo">未完成</a-radio-button>
-        </a-radio-group>
-      </div>
+      <todo-filter @filterChange="filterChange"></todo-filter>
       <div v-if="filteredTodos.length > 0" class="todo-list">
         <transition-group name="list-complete">
           <div v-for="item in filteredTodos" :key="item.id" class="todo-item">
@@ -81,16 +74,18 @@
 import { RestTwoTone, CheckCircleTwoTone, ThunderboltTwoTone } from '@ant-design/icons-vue'
 import { defineComponent, reactive, ref, computed } from 'vue'
 import { diffTime } from '../utils/utils'
+import todoFilter from '@/components/todo/todo-filter.vue'
 import dayjs from 'dayjs'
 export default defineComponent({
   components: {
     RestTwoTone,
     CheckCircleTwoTone,
-    ThunderboltTwoTone
+    ThunderboltTwoTone,
+    todoFilter
   },
   setup() {
-    const value = ref('')
-    const status = ref<string>('all')
+    const value = ref<string>('')
+    let status = ref<string>('all')
     const list = window.localStorage.getItem('todolist')
     const statusMap: any = {
       done: {
@@ -162,6 +157,10 @@ export default defineComponent({
       todolist[index].status = 'processing'
       savedata()
     }
+
+    const filterChange = (e: any) => {
+      status.value = e.target.value
+    }
     return {
       status,
       statusMap,
@@ -172,7 +171,8 @@ export default defineComponent({
       start,
       filteredTodos,
       dayjs,
-      diffTime
+      diffTime,
+      filterChange
     }
   }
 })
@@ -181,24 +181,25 @@ export default defineComponent({
 .list-complete-move {
   transition: transform 0.3s ease;
 }
-.list-complete-enter-from,
-.list-complete-leave-to {
+.list-complete-enter-from {
   opacity: 0;
   transform: translateY(30px);
+}
+.list-complete-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 .contain {
   background-color: #f4f6fd;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow: auto;
 }
 .todolist {
   width: 750px;
   margin: 100px auto 0;
-  overflow: auto;
   .todo-form {
     display: flex;
-    box-shadow: 0 5.3px 10px rgba(0, 0, 0, 0.035), 0 42px 80px rgba(0, 0, 0, 0.07);
   }
   .filter {
     margin: 20px 8px 0 20px;
@@ -206,7 +207,6 @@ export default defineComponent({
 
   .todo-list {
     height: 600px;
-    overflow: auto;
     &::-webkit-scrollbar {
       width: 8px;
     }
